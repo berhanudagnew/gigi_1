@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import os
 import json
+import asyncio
+from aiohttp import web
 import shutil
 from config import config
 from core.song import Song
@@ -601,5 +603,27 @@ async def closed_vc(_, update: Update):
         clear_queue(chat_id)
 
 
-client.start()
-pytgcalls.run()
+# client.start()
+# pytgcalls.run()
+
+# Add a basic web server to bind to Render's PORT
+async def web_server():
+    app = web.Application()
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 5000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    print(f"Web server running on port {port}")
+
+# Update the main function
+async def main():
+    await client.start()
+    await pytgcalls.run()
+    await web_server()  # Start the web server
+    # await join_voice_chat()
+    # await idle()  # Keep running
+
+# Run the event loop
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())
